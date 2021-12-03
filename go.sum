@@ -357,6 +357,8 @@ github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+
 github.com/xdg-go/stringprep v1.0.2/go.mod h1:8F9zXuvzgwmyT5DUm4GUfZGDdT3W+LCvS6+da4O5kxM=
 github.com/yedf/dtmdriver v0.0.0-20211202092330-86dce681d5db h1:Y8ZADMM3CGQ4k83FwOeDYTu7bkTGtkdboaJKhJ3HInk=
 github.com/yedf/dtmdriver v0.0.0-20211202092330-86dce681d5db/go.mod h1:aeo6ZWiVI0x8P8O18r6uB1cG2uw9BCQyYZaH15MlRDI=
+github.com/yedf/dtmdriver v0.0.0-20211203060147-29426c663b6e h1:xXyb4mr46T5KqR5SXd37ivXNJ33k/MSAAwsGP6btmh8=
+github.com/yedf/dtmdriver v0.0.0-20211203060147-29426c663b6e/go.mod h1:aeo6ZWiVI0x8P8O18r6uB1cG2uw9BCQyYZaH15MlRDI=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
