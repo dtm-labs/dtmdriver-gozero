@@ -13,6 +13,7 @@ import (
 const (
 	DriverName = "dtm-driver-gozero"
 	kindEtcd   = "etcd"
+	kindDiscov = "discov"
 )
 
 type (
@@ -28,12 +29,17 @@ func (z *zeroDriver) RegisterGrpcResolver() {
 }
 
 func (z *zeroDriver) RegisterGrpcService(target string, endpoint string) error {
+	if target == "" { // empty target, no action
+		return nil
+	}
 	u, err := url.Parse(target)
 	if err != nil {
 		return err
 	}
 
 	switch u.Scheme {
+	case kindDiscov:
+		fallthrough
 	case kindEtcd:
 		pub := discov.NewPublisher(strings.Split(u.Host, ","), strings.TrimPrefix(u.Path, "/"), endpoint)
 		pub.KeepAlive()
