@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/dtm-labs/dtmdriver"
 	"github.com/tal-tech/go-zero/core/discov"
 	"github.com/tal-tech/go-zero/zrpc/resolver"
-	"github.com/yedf/dtmdriver"
 )
 
 const (
