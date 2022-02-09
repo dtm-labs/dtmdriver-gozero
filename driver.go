@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/dtm-labs/dtmdriver"
-	"github.com/tal-tech/go-zero/core/discov"
-	"github.com/tal-tech/go-zero/zrpc/resolver"
+	"github.com/zeromicro/go-zero/core/discov"
+	"github.com/zeromicro/go-zero/zrpc/resolver"
 )
 
 const (
