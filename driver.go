@@ -69,11 +69,22 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 		return uri[:sep], uri[sep:], nil
 
 	}
+	//resolve gozero consul wait=xx url.Parse no standard
+	if strings.Contains(uri, kindConsul) && strings.Contains(uri, "?") {
+		tmp := strings.Split(uri, "?")
+		sep := strings.IndexByte(tmp[1], '/')
+		if sep == -1 {
+			return "", "", fmt.Errorf("bad url: '%s'. no '/' found", uri)
+		}
+		uri = tmp[0] + tmp[1][sep:]
+	}
+
 	u, err := url.Parse(uri)
 	if err != nil {
 		return "", "", nil
 	}
 	index := strings.IndexByte(u.Path[1:], '/') + 1
+
 	return u.Scheme + "://" + u.Host + u.Path[:index], u.Path[index:], nil
 }
 
