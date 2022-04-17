@@ -2,6 +2,7 @@ package driver
 
 import (
 	"fmt"
+	"github.com/zeromicro/zero-contrib/zrpc/registry/consul"
 	"net/url"
 	"strings"
 
@@ -14,6 +15,7 @@ const (
 	DriverName = "dtm-driver-gozero"
 	kindEtcd   = "etcd"
 	kindDiscov = "discov"
+	kindConsul = "consul"
 )
 
 type (
@@ -36,13 +38,21 @@ func (z *zeroDriver) RegisterGrpcService(target string, endpoint string) error {
 	if err != nil {
 		return err
 	}
-
 	switch u.Scheme {
 	case kindDiscov:
 		fallthrough
 	case kindEtcd:
 		pub := discov.NewPublisher(strings.Split(u.Host, ","), strings.TrimPrefix(u.Path, "/"), endpoint)
 		pub.KeepAlive()
+	case kindConsul:
+		return consul.RegisterService(endpoint, consul.Conf{
+			Host: u.Host,
+			Key:  strings.TrimPrefix(u.Path, "/"),
+			Tag:  []string{"tag", "rpc"},
+			Meta: map[string]string{
+				"Protocol": "grpc",
+			},
+		})
 	default:
 		return fmt.Errorf("unknown scheme: %s", u.Scheme)
 	}
