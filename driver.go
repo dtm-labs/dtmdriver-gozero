@@ -2,9 +2,10 @@ package driver
 
 import (
 	"fmt"
-	"github.com/zeromicro/zero-contrib/zrpc/registry/consul"
 	"net/url"
 	"strings"
+
+	"github.com/zeromicro/zero-contrib/zrpc/registry/consul"
 
 	"github.com/dtm-labs/dtmdriver"
 	"github.com/zeromicro/go-zero/core/discov"
@@ -38,11 +39,18 @@ func (z *zeroDriver) RegisterGrpcService(target string, endpoint string) error {
 	if err != nil {
 		return err
 	}
+
+	opts := make([]discov.PubOption, 0)
+	query, _ := url.ParseQuery(u.RawQuery)
+	if query.Get("user") != "" {
+		opts = append(opts, discov.WithPubEtcdAccount(query.Get("user"), query.Get("password")))
+	}
+
 	switch u.Scheme {
 	case kindDiscov:
 		fallthrough
 	case kindEtcd:
-		pub := discov.NewPublisher(strings.Split(u.Host, ","), strings.TrimPrefix(u.Path, "/"), endpoint)
+		pub := discov.NewPublisher(strings.Split(u.Host, ","), strings.TrimPrefix(u.Path, "/"), endpoint, opts...)
 		pub.KeepAlive()
 	case kindConsul:
 		return consul.RegisterService(endpoint, consul.Conf{
