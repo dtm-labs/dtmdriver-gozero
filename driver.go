@@ -41,16 +41,9 @@ func (z *zeroDriver) RegisterGrpcService(target string, endpoint string) error {
 	}
 
 	opts := make([]discov.PubOption, 0)
-	var user, password string
 	query, _ := url.ParseQuery(u.RawQuery)
-	if v, ok := query["user"]; ok && len(v) > 0 {
-		user = v[0]
-	}
-	if v, ok := query["password"]; ok && len(v) > 0 {
-		password = v[0]
-	}
-	if user != "" {
-		opts = append(opts, discov.WithPubEtcdAccount(user, password))
+	if query.Get("user") != "" {
+		opts = append(opts, discov.WithPubEtcdAccount(query.Get("user"), query.Get("password")))
 	}
 
 	switch u.Scheme {
