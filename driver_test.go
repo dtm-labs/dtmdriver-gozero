@@ -20,7 +20,7 @@ func TestZeroDriver_RegisterGrpcService(t *testing.T) {
 	endpoint := "localhost:36790"
 	driver := new(zeroDriver)
 	if err := driver.RegisterGrpcService(target, endpoint); err != nil {
-		t.Errorf("register consul fail err :%+v", err)
+		t.Errorf("register nacos fail err :%+v", err)
 	}
 
 	time.Sleep(60 * time.Second)
