@@ -16,7 +16,7 @@ func TestZeroDriver_RegisterGrpcService(t *testing.T) {
 	//}
 
 	// nacos
-	target := "nacos://172.16.130.211:8848/dtmservice?namespaceId=public&timeoutMs=3000&notLoadCacheAtStart=true&logLevel=debug"
+	target := "nacos://127.0.0.1:8848/dtmservice?namespaceId=public&timeoutMs=3000&notLoadCacheAtStart=true&logLevel=debug"
 	endpoint := "localhost:36790"
 	driver := new(zeroDriver)
 	if err := driver.RegisterGrpcService(target, endpoint); err != nil {
