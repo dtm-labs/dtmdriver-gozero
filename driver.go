@@ -2,11 +2,12 @@ package driver
 
 import (
 	"fmt"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/zeromicro/zero-contrib/zrpc/registry/nacos"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/zeromicro/zero-contrib/zrpc/registry/nacos"
 
 	"github.com/zeromicro/zero-contrib/zrpc/registry/consul"
 
@@ -35,7 +36,7 @@ func (z *zeroDriver) RegisterGrpcResolver() {
 	resolver.Register()
 }
 
-func (z *zeroDriver) RegisterGrpcService(target string, endpoint string) error {
+func (z *zeroDriver) RegisterService(target string, endpoint string) error {
 	if target == "" { // empty target, no action
 		return nil
 	}
