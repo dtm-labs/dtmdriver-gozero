@@ -32,7 +32,7 @@ func (z *zeroDriver) GetName() string {
 	return DriverName
 }
 
-func (z *zeroDriver) RegisterGrpcResolver() {
+func (z *zeroDriver) RegisterAddrResolver() {
 	resolver.Register()
 }
 

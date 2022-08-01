@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1620 // indirect
-	github.com/dtm-labs/dtmdriver v0.0.5
+	github.com/dtm-labs/dtmdriver v0.0.6
 	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.0 // indirect
 	github.com/hashicorp/serf v0.9.7 // indirect
