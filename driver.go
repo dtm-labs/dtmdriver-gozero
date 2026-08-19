@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/zeromicro/zero-contrib/zrpc/registry/nacos"
 
 	"github.com/zeromicro/zero-contrib/zrpc/registry/consul"
@@ -55,7 +55,14 @@ func (z *zeroDriver) RegisterService(target string, endpoint string) error {
 	case kindDiscov:
 		fallthrough
 	case kindEtcd:
-		pub := discov.NewPublisher(strings.Split(u.Host, ","), strings.TrimPrefix(u.Path, "/"), endpoint, opts...)
+		hosts, key := parseEtcdTarget(u, query)
+		if len(hosts) == 0 {
+			return fmt.Errorf("bad target: '%s'. no etcd host found", target)
+		}
+		if key == "" {
+			return fmt.Errorf("bad target: '%s'. no etcd key found", target)
+		}
+		pub := discov.NewPublisher(hosts, key, endpoint, opts...)
 		pub.KeepAlive()
 	case kindConsul:
 		return consul.RegisterService(endpoint, consul.Conf{
@@ -107,6 +114,25 @@ func (z *zeroDriver) RegisterService(target string, endpoint string) error {
 
 	return nil
 }
+
+// parseEtcdTarget pulls the hosts and the key out of an already parsed
+// etcd/discov target, supporting both layouts:
+//   - legacy: etcd://host1:port,host2:port/key        hosts in the authority, key in the path
+//   - new:    etcd:///host1:port,host2:port?key=<key> hosts in the path, key in the query (go-zero v1.10)
+//
+// It branches on whether the authority is empty, exactly like targets.GetHosts
+// and targets.GetKey in go-zero's resolver, so registration and resolution
+// always agree on the key.
+func parseEtcdTarget(u *url.URL, query url.Values) (hosts []string, key string) {
+	raw := u.Host
+	key = strings.Trim(u.Path, "/")
+	if raw == "" { // new format
+		raw, key = key, query.Get("key")
+	}
+	hosts = strings.FieldsFunc(raw, func(r rune) bool { return r == ',' })
+	return hosts, key
+}
+
 func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string, err error) {
 
 	// 单独处理consul 的target
@@ -122,7 +148,7 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 	//"consul://[::1]:8500/cache-svc?region=local/cache.Redis/Get",
 	// 6. query 中只有前缀和方法
 	//"consul://consul.local:8500/auth-svc?debug/auth.Service/Login",
-	// 7. 新增：显式包含多个 & 的复杂查询参数 
+	// 7. 新增：显式包含多个 & 的复杂查询参数
 	//"consul://172.16.0.100:8500/payment-svc?env=prod&tag=grpc_q&a=b&debug=true/payment.PaymentService/Process",
 	if strings.Contains(uri, kindConsul) {
 		u, err := url.Parse(uri)
@@ -135,7 +161,7 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 		if u.RawQuery != "" {
 			// With query: split at FIRST '/' in RawQuery
 			if i := strings.Index(u.RawQuery, "/"); i >= 0 {
-				method = u.RawQuery[i+1:]
+				method = u.RawQuery[i:] // keep the leading '/', gRPC wants /pkg.Service/Method
 				u.RawQuery = u.RawQuery[:i]
 			}
 		} else {
@@ -146,17 +172,17 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 			}
 			if idx := strings.Index(path[1:], "/"); idx >= 0 {
 				splitPos := 1 + idx
-				method = path[splitPos+1:]
+				method = path[splitPos:] // keep the leading '/'
 				u.Path = path[:splitPos]
 			}
 		}
 
-		if method == "" {
+		if method == "" || method == "/" {
 			return "", "", fmt.Errorf("gRPC method part missing or empty")
 		}
 		return u.String(), method, nil
 	}
-	
+
 	if !strings.Contains(uri, "//") { // 处理无scheme的情况，如果您没有直连，可以不处理
 		sep := strings.IndexByte(uri, '/')
 		if sep == -1 {
@@ -164,6 +190,25 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 		}
 		return uri[:sep], uri[sep:], nil
 
+	}
+
+	// Target format introduced in go-zero v1.10: etcd:///host1:port,host2:port?key=<key>
+	// The hosts live in the path and the key in the query, so the appended gRPC
+	// method ends up inside RawQuery, the same shape consul targets already had.
+	// Splitting on the first '/' is safe because the key is url.QueryEscape'd
+	// and therefore never contains a bare slash.
+	if strings.HasPrefix(uri, kindEtcd+":///") || strings.HasPrefix(uri, kindDiscov+":///") {
+		u, err := url.Parse(uri)
+		if err != nil {
+			return "", "", err
+		}
+		i := strings.Index(u.RawQuery, "/")
+		if i < 0 {
+			return "", "", fmt.Errorf("bad url: '%s'. gRPC method part missing", uri)
+		}
+		method = u.RawQuery[i:] // keep the leading '/', same as the legacy branch
+		u.RawQuery = u.RawQuery[:i]
+		return u.String(), method, nil
 	}
 	//resolve gozero consul wait=xx url.Parse no standard
 	if (strings.Contains(uri, kindConsul) || strings.Contains(uri, kindNacos)) && strings.Contains(uri, "?") {
@@ -177,7 +222,7 @@ func (z *zeroDriver) ParseServerMethod(uri string) (server string, method string
 
 	u, err := url.Parse(uri)
 	if err != nil {
-		return "", "", nil
+		return "", "", err
 	}
 	index := strings.IndexByte(u.Path[1:], '/') + 1
 
